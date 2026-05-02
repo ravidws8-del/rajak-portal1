@@ -143,8 +143,88 @@ body{
   .dashboard-grid{
     grid-template-columns:1fr 1fr;
   }
+  
 }
 
+/* MOBILE */
+@media (max-width:576px){
+
+  #loginBox{
+    width:92%;
+    padding:45px 20px;
+  }
+
+  .dashboard-grid{
+    grid-template-columns:1fr 1fr;
+  }
+}
+
+/* ================= REPORT SCROLL FIX (GLOBAL - IMPORTANT) ================= */
+
+#reportData{
+  max-height: 60vh;
+  overflow-y: auto;
+  overflow-x: auto;
+  padding: 10px;
+}
+
+/* TABLE LOOK */
+#reportData table{
+  font-size: 13px;
+  min-width: 900px;
+}
+
+/* STICKY HEADER */
+#reportData th{
+  position: sticky;
+  top: 0;
+  background: #111;
+  color: #fff;
+  z-index: 2;
+}
+
+/* ================= DASHBOARD COMPACT ================= */
+
+.dash-card{
+  padding: 16px;
+  border-radius: 18px;
+  color: #fff;
+  text-align: left;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(8px);
+}
+
+/* hover effect */
+.dash-card:hover{
+  transform: translateY(-5px);
+  box-shadow: 0 18px 40px rgba(0,0,0,0.25);
+}
+
+/* ================= MOBILE IMPROVEMENT ================= */
+
+@media (max-width:576px){
+
+  .dashboard-grid{
+    grid-template-columns: 1fr;
+  }
+
+  #reportData table{
+    font-size: 11px;
+  }
+}
+#reportData{
+  width: 100%;
+  overflow-x: auto;
+}
+
+#reportData table{
+  width: 100%;
+  min-width: 700px;
+  font-size: clamp(10px, 2vw, 13px);
+}
 </style>
 </head>
 

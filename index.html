@@ -161,26 +161,43 @@ body{
 
 /* ================= REPORT SCROLL FIX (GLOBAL - IMPORTANT) ================= */
 
+/* ================= FIX REPORT LAYOUT ================= */
+
+body.dashboard-mode .box{
+  display:block !important;
+  padding:15px;
+}
+
+/* dashboard full width */
+#dashboard{
+  width:100%;
+}
+
+/* report container clean */
+#reportBox{
+  width:100%;
+}
+
+/* report data proper full width */
 #reportData{
-  max-height: 60vh;
-  overflow-y: auto;
-  overflow-x: auto;
-  padding: 10px;
+  width:100%;
+  overflow-x:auto;
+  background:#fff;
+  border-radius:10px;
 }
 
-/* TABLE LOOK */
+/* table fix */
 #reportData table{
-  font-size: 13px;
-  min-width: 900px;
+  width:100%;
+  min-width:100%;
+  font-size:13px;
 }
 
-/* STICKY HEADER */
-#reportData th{
-  position: sticky;
-  top: 0;
-  background: #111;
-  color: #fff;
-  z-index: 2;
+/* mobile improvement */
+@media (max-width:576px){
+  #reportData table{
+    font-size:11px;
+  }
 }
 
 /* ================= DASHBOARD COMPACT ================= */
@@ -203,27 +220,47 @@ body{
   box-shadow: 0 18px 40px rgba(0,0,0,0.25);
 }
 
-/* ================= MOBILE IMPROVEMENT ================= */
+/* ================= MOBILE FIX (UPDATED DASHBOARD LIKE DESKTOP) ================= */
 
 @media (max-width:576px){
 
+  #loginBox{
+    width:92%;
+    padding:45px 20px;
+  }
+
+  /* ❌ OLD: 1 column removed */
+  /* .dashboard-grid{
+    grid-template-columns:1fr;
+  } */
+
+  /* ✅ NEW: keep 2 columns like desktop */
   .dashboard-grid{
-    grid-template-columns: 1fr;
+    grid-template-columns:repeat(2,1fr);
+    gap:10px;
+  }
+
+  .dash-card{
+    padding:12px;
+    font-size:12px;
+  }
+
+  .dash-card h4{
+    font-size:12px;
+  }
+
+  .dash-card h3,
+  .dash-card h2{
+    font-size:16px;
+  }
+
+  .dash-card h5{
+    font-size:14px;
   }
 
   #reportData table{
-    font-size: 11px;
+    font-size:11px;
   }
-}
-#reportData{
-  width: 100%;
-  overflow-x: auto;
-}
-
-#reportData table{
-  width: 100%;
-  min-width: 700px;
-  font-size: clamp(10px, 2vw, 13px);
 }
 </style>
 </head>
@@ -241,7 +278,7 @@ body{
   </div>
 
   <h3 style="margin-top:70px;">धोबी समाज सहायता प्रणाली</h3>
-  <p style="opacity:0.8;font-size:13px;">🔐 Login</p>
+  <p style="opacity:0.8;font-size:13px;">Login</p>
 
   <input id="u" class="form-control mt-2" placeholder="Username">
   <input id="p" type="password" class="form-control mt-2" placeholder="Password">

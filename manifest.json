@@ -1,6 +1,6 @@
 {
-  "name": "Loan System",
-  "short_name": "LoanApp",
+  "name": "धोबी समाज सहायता प्रणाली",
+  "short_name": "RajakApp",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#473787",

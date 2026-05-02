@@ -22,13 +22,20 @@
 <!-- ICONS -->
 <link rel="icon" href="https://raw.githubusercontent.com/ravidws8-del/rajak-portal1/main/Gadge.png">
 <link rel="apple-touch-icon" sizes="180x180" href="https://raw.githubusercontent.com/ravidws8-del/rajak-portal1/main/Gadge.png">
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 <!-- LIBRARIES -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<!-- ✅ पहले jspdf -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<!-- ✅ उसके बाद autotable -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <style>
@@ -192,6 +199,25 @@ body.dashboard-mode .box{
   min-width:100%;
   font-size:13px;
 }
+#reportData table{
+  width: 100%;
+  min-width: 900px;
+  table-layout: fixed;   /* ⭐ important */
+}
+
+#reportData th,
+#reportData td{
+  white-space: nowrap;   /* ⭐ date wrap nahi hoga */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 6px 8px;
+}
+
+/* Date column fix width */
+#reportData th:first-child,
+#reportData td:first-child{
+  width: 110px;
+}
 
 /* mobile improvement */
 @media (max-width:576px){
@@ -297,36 +323,36 @@ body.dashboard-mode .box{
  <div class="dashboard-grid">
 
   <div class="dash-card purple">
-    <h3>आगामी कुल राशि + ब्याज</h3>
+    <h4>आगामी कुल राशि + ब्याज</h4>
     <small class="eng">Future Total Amount</small>
     <h2 id="totalBalance">0</h2>
   </div>
 
   <div class="dash-card blue">
-    <h3>सामाजिक बैलेंस राशि</h3>
+    <h2>सामाजिक बैलेंस राशि</h2>
     <small class="eng">Available Balance</small>
     <h3 id="balance">0</h3>
   </div>
 
   <div class="dash-card orange">
-    <h3>कुल ब्याज</h3>
+    <h2>कुल ब्याज</h2>
     <small class="eng">Total Interest</small>
     <h3 id="interest">0</h3>
   </div>
 
   <div class="dash-card green">
-    <h4>कुल वितरण</h4>
+    <h2>कुल वितरण</h2>
     <small class="eng">Total Distribution</small>
     <h3 id="distribution">0</h3>
   </div>
 
   <div class="dash-card red">
-    <h3>कुल वितरण + ब्याज</h3>
+    <h2>कुल वितरण + ब्याज</h2>
     <small class="eng">Distribution + Interest</small>
     <h3 id="distInt">0</h3>
 </div>
   <div class="dash-card red">
-  <h3>Member Balance</h3>
+  <h4>Member Balance</h4>
     <small class="eng">Individual Balance</small>
     <h5 id="memberWiseName">--</h5>
     <h3 id="memberWiseBalance">0</h3>
@@ -924,35 +950,118 @@ function loadMembers(){
 async function printStatement(){
 
   const { jsPDF } = window.jspdf;
+  let doc = new jsPDF("p","mm","a4");
 
-  let element = document.getElementById("reportData");
-
-  const canvas = await html2canvas(element, { scale: 2 });
-
-  const imgData = canvas.toDataURL("image/png");
-
-  const pdf = new jsPDF("p", "mm", "a4");
-
-  const imgWidth = 210;
-  const pageHeight = 297;
-
-  const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-  let heightLeft = imgHeight;
-  let position = 0;
-
-  pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-
-  heightLeft -= pageHeight;
-
-  while(heightLeft > 0){
-    position -= pageHeight;
-    pdf.addPage();
-    pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-    heightLeft -= pageHeight;
+  if(!doc.autoTable){
+    alert("autoTable not loaded!");
+    return;
   }
 
-  pdf.save("statement.pdf");
+  // ===== HEADER =====
+  doc.setFontSize(18);
+  doc.text("धोबी समाज सहायता प्रणाली", 105, 15, { align: "center" });
+
+  doc.setFontSize(12);
+  doc.text("लेन-देन विवरण", 105, 22, { align: "center" });
+
+  doc.setFontSize(10);
+  doc.text("Date: " + new Date().toLocaleDateString(), 14, 30);
+
+  let rows = [];
+
+  // 🔢 TOTAL VARIABLES
+  let totalLoan = 0;
+  let totalInterest = 0;
+  let totalPayment = 0;
+
+  let trs = document.querySelectorAll("#reportData table tr");
+
+  trs.forEach((tr, i) => {
+
+    let cols = tr.querySelectorAll("th,td");
+    if(cols.length === 0) return;
+
+    let firstColText = cols[0].innerText.trim().toUpperCase();
+
+    // ❌ skip header + TOTAL row
+    if(i === 0 || firstColText.includes("TOTAL")) return;
+
+    let row = [];
+
+    cols.forEach((td, index) => {
+
+      let val = td.innerText.trim();
+      row.push(val);
+
+      // 👉 CALCULATION
+      if(index === 1 && val === "LOAN"){
+        totalLoan += Number(cols[2].innerText) || 0;
+        totalInterest += Number(cols[3].innerText) || 0;
+      }
+
+      if(index === 1 && val === "PAYMENT"){
+        totalPayment += Number(cols[2].innerText) || 0;
+      }
+
+    });
+
+    rows.push(row);
+
+  });
+
+  let finalBalance = (totalLoan + totalInterest) - totalPayment;
+
+  // ===== TABLE =====
+  doc.autoTable({
+    startY: 40,
+    head: [[
+      "Date",
+      "Type",
+      "Amount",
+      "Interest",
+      "Remark",
+      "Balance"
+    ]],
+    body: rows,
+    theme: "grid",
+    styles: {
+      fontSize: 9,
+      cellPadding: 3
+    },
+    headStyles: {
+      fillColor: [0, 102, 204],
+      textColor: 255
+    }
+  });
+
+  // ===== SUMMARY =====
+  let y = doc.lastAutoTable.finalY + 10;
+
+  doc.setFontSize(12);
+  doc.setFont(undefined, "bold");
+  doc.text("Summary:", 14, y);
+
+  doc.setFont(undefined, "normal");
+
+  y += 7;
+  doc.text("Total Loan: " + totalLoan, 14, y);
+
+  y += 7;
+  doc.text("Total Interest: " + totalInterest, 14, y);
+
+  y += 7;
+  doc.text("Total Paid: " + totalPayment, 14, y);
+
+  y += 7;
+  doc.text("Final Balance: " + finalBalance, 14, y);
+
+  // ===== FOOTER =====
+  let pageHeight = doc.internal.pageSize.height;
+  doc.setFontSize(9);
+  doc.text("Generated by Loan System", 14, pageHeight - 10);
+
+  // ===== SAVE =====
+  doc.save("statement.pdf");
 }
 
 </script>
